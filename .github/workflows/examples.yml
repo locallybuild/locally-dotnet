@@ -44,7 +44,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - uses: locallybuild/setup-locally@a73699889c07b01743dff4cbf290d53a91234448 # v1.0.2
+      - uses: locallybuild/setup-locally@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
         with:
           team-uuid: ${{ vars.LOCALLY_TEAM_UUID }}
           plugins: custom
@@ -56,5 +56,5 @@ jobs:
         working-directory: examples/${{ matrix.example }}
         run: locally run dotnet test Locally.Examples.Aspire.${{ matrix.example }}.slnx
 
-      - uses: locallybuild/setup-locally/teardown@a73699889c07b01743dff4cbf290d53a91234448 # v1.0.2
+      - uses: locallybuild/setup-locally/teardown@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
         if: always()
