@@ -8,7 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="13.6.4" />
     <PackageReference Include="Aspire.StackExchange.Redis" Version="13.6.4" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="xunit" Version="2.*" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
