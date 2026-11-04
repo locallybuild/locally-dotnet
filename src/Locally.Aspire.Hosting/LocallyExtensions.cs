@@ -119,9 +119,15 @@ public static class LocallyExtensions
             }
         });
 
-        builder.Services.AddHostedService(sp => new DashboardLinks(
-            sp.GetRequiredService<ResourceNotificationService>(),
-            new Uri(config["LOCALLY_DASHBOARD_URL"] ?? "https://localhost:5678")));
+        // The links are rewritten as Aspire provisions each resource. A hosted
+        // service would only start once every resource had been provisioned,
+        // so the watch starts from BeforeStartEvent, which fires before any are.
+        var dashboard = new Uri(config["LOCALLY_DASHBOARD_URL"] ?? "https://localhost:5678");
+        builder.Eventing.Subscribe<BeforeStartEvent>((@event, _) =>
+        {
+            DashboardLinks.Start(@event.Services, dashboard);
+            return Task.CompletedTask;
+        });
 
         // Provision into the subscription, tenant and region `locally run`
         // selected, whatever Aspire remembers choosing on an earlier run: a

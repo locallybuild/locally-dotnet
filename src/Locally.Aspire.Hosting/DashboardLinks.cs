@@ -1,4 +1,5 @@
 using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Locally.Aspire.Hosting;
@@ -6,21 +7,36 @@ namespace Locally.Aspire.Hosting;
 // Rewrites the Azure portal links Aspire publishes for each resource it
 // provisions - a deployment's, or a resource's - as links to the same resource
 // in the Locally Dashboard's Resource View.
-internal sealed class DashboardLinks(ResourceNotificationService notifications, Uri dashboard) : BackgroundService
+internal static class DashboardLinks
 {
     private const string Portal = "https://portal.azure.com";
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    // Watches every resource until the AppHost stops, rewriting its portal links
+    // as soon as Aspire publishes them.
+    public static void Start(IServiceProvider services, Uri dashboard)
     {
-        await foreach (var change in notifications.WatchAsync(stoppingToken))
+        var notifications = services.GetRequiredService<ResourceNotificationService>();
+        var stopping = services.GetRequiredService<IHostApplicationLifetime>().ApplicationStopping;
+        _ = Task.Run(() => WatchAsync(notifications, dashboard, stopping), stopping);
+    }
+
+    private static async Task WatchAsync(ResourceNotificationService notifications, Uri dashboard, CancellationToken stoppingToken)
+    {
+        try
         {
-            if (change.Snapshot.Urls.Any(u => u.Url.StartsWith(Portal, StringComparison.OrdinalIgnoreCase)))
+            await foreach (var change in notifications.WatchAsync(stoppingToken))
             {
-                await notifications.PublishUpdateAsync(change.Resource, change.ResourceId, state => state with
+                if (change.Snapshot.Urls.Any(u => u.Url.StartsWith(Portal, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Urls = [.. state.Urls.Select(u => u with { Url = Rewrite(u.Url, dashboard) })],
-                });
+                    await notifications.PublishUpdateAsync(change.Resource, change.ResourceId, state => state with
+                    {
+                        Urls = [.. state.Urls.Select(u => u with { Url = Rewrite(u.Url, dashboard) })],
+                    });
+                }
             }
+        }
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+        {
         }
     }
 
