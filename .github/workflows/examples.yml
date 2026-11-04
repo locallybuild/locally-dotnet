@@ -56,5 +56,30 @@ jobs:
         working-directory: examples/${{ matrix.example }}
         run: locally run dotnet test Locally.Examples.Aspire.${{ matrix.example }}.slnx
 
+      # Teardown uploads Locally's ci.log, which only covers startup - so whilst Locally's still running,
+      # capture the requests it served (tokens and values are redacted) and the state of any containers.
+      - name: Capture diagnostics
+        if: failure()
+        env:
+          DIAGNOSTICS: ${{ runner.temp }}/diagnostics
+        run: |
+          mkdir -p "$DIAGNOSTICS"
+          locally logs --json > "$DIAGNOSTICS/requests.json" 2>&1 || echo "::warning::locally logs failed"
+          if command -v podman > /dev/null; then
+            podman ps -a > "$DIAGNOSTICS/containers.txt" 2>&1 || true
+            # Not `podman inspect`, since a container's environment can include secrets (e.g. the SQL Server password).
+            for id in $(podman ps -aq); do
+              podman logs --timestamps "$id" > "$DIAGNOSTICS/container-$id.log" 2>&1 || true
+            done
+          fi
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: diagnostics-${{ matrix.example }}
+          path: ${{ runner.temp }}/diagnostics
+          if-no-files-found: ignore
+
       - uses: locallybuild/setup-locally/teardown@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
         if: always()
