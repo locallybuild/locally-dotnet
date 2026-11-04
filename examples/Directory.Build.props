@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- The examples don't inherit the repository's Directory.Build.props, since that's for the packages. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>

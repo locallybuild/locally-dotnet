@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "Locally.Examples.Aspire.CosmosDB.AppHost/Locally.Examples.Aspire.CosmosDB.AppHost.csproj"
+  }
+}

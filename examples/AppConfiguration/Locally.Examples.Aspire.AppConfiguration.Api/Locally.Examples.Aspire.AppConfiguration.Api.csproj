@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="13.6.4" />
+    <PackageReference Include="Azure.Data.AppConfiguration" Version="1.11.1" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Outside of this repository, use: dotnet add package Locally.Aspire.Client -->
+    <ProjectReference Include="../../../src/Locally.Aspire.Client/Locally.Aspire.Client.csproj" />
+  </ItemGroup>
+
+</Project>

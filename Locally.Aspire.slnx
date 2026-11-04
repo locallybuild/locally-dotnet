@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Locally.Aspire.Client/Locally.Aspire.Client.csproj" />
+    <Project Path="src/Locally.Aspire.Hosting/Locally.Aspire.Hosting.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Locally.Aspire.Client.Tests/Locally.Aspire.Client.Tests.csproj" />
+    <Project Path="tests/Locally.Aspire.Hosting.Tests/Locally.Aspire.Hosting.Tests.csproj" />
+  </Folder>
+</Solution>

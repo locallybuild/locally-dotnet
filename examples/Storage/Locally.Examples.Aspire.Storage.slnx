@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.Storage.Api/Locally.Examples.Aspire.Storage.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.Storage.AppHost/Locally.Examples.Aspire.Storage.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.Storage.Tests/Locally.Examples.Aspire.Storage.Tests.csproj" />
+</Solution>

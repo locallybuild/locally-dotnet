@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.ServiceBus.Api/Locally.Examples.Aspire.ServiceBus.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.ServiceBus.AppHost/Locally.Examples.Aspire.ServiceBus.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.ServiceBus.Tests/Locally.Examples.Aspire.ServiceBus.Tests.csproj" />
+</Solution>

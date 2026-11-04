@@ -1,0 +1,60 @@
+name: Examples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  example:
+    name: ${{ matrix.example }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Locally signs in using the job's OIDC token
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - example: AppConfiguration
+            plugins: Microsoft.AppConfiguration
+          - example: ApplicationInsights
+            plugins: Microsoft.Insights,Microsoft.OperationalInsights
+          - example: AzureSQL
+            plugins: Microsoft.Sql
+            accept-sql-server-licence: true
+          - example: CosmosDB
+            plugins: Microsoft.DocumentDB
+          - example: EventHubs
+            plugins: Microsoft.EventHub
+          - example: KeyVault
+            plugins: Microsoft.KeyVault
+          - example: PostgreSQL
+            plugins: Microsoft.DBforPostgreSQL
+          - example: Redis
+            plugins: Microsoft.Cache
+          - example: ServiceBus
+            plugins: Microsoft.ServiceBus
+          - example: Storage
+            plugins: Microsoft.Storage
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: locallybuild/setup-locally@a73699889c07b01743dff4cbf290d53a91234448 # v1.0.2
+        with:
+          team-uuid: ${{ vars.LOCALLY_TEAM_UUID }}
+          plugins: custom
+          plugins-list: ${{ matrix.plugins }}
+          # The Azure SQL plugin runs SQL Server, whose licence has to be accepted before it can be installed.
+          accept-sql-server-licence: ${{ matrix.accept-sql-server-licence && 'true' || 'false' }}
+
+      - name: Test
+        working-directory: examples/${{ matrix.example }}
+        run: locally run dotnet test Locally.Examples.Aspire.${{ matrix.example }}.slnx
+
+      - uses: locallybuild/setup-locally/teardown@a73699889c07b01743dff4cbf290d53a91234448 # v1.0.2
+        if: always()

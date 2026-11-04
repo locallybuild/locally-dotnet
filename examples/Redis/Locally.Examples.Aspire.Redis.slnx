@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.Redis.Api/Locally.Examples.Aspire.Redis.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.Redis.AppHost/Locally.Examples.Aspire.Redis.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.Redis.Tests/Locally.Examples.Aspire.Redis.Tests.csproj" />
+</Solution>

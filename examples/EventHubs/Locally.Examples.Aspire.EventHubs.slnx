@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.EventHubs.Api/Locally.Examples.Aspire.EventHubs.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.EventHubs.AppHost/Locally.Examples.Aspire.EventHubs.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.EventHubs.Tests/Locally.Examples.Aspire.EventHubs.Tests.csproj" />
+</Solution>

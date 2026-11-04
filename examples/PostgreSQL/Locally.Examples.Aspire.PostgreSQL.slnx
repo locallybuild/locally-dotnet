@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.PostgreSQL.Api/Locally.Examples.Aspire.PostgreSQL.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.PostgreSQL.AppHost/Locally.Examples.Aspire.PostgreSQL.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.PostgreSQL.Tests/Locally.Examples.Aspire.PostgreSQL.Tests.csproj" />
+</Solution>

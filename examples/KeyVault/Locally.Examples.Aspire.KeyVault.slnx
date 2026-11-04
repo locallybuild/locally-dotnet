@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.KeyVault.Api/Locally.Examples.Aspire.KeyVault.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.KeyVault.AppHost/Locally.Examples.Aspire.KeyVault.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.KeyVault.Tests/Locally.Examples.Aspire.KeyVault.Tests.csproj" />
+</Solution>

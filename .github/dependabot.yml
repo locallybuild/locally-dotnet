@@ -1,0 +1,27 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # The packages, their tests and the examples, so they all move to a new Aspire release together.
+  - package-ecosystem: nuget
+    directories:
+      - /src/*
+      - /tests/*
+      - /examples
+      - /examples/*/*
+    schedule:
+      interval: weekly
+    groups:
+      aspire:
+        patterns: ["Aspire.*"]
+      azure:
+        patterns: ["Azure.*"]
+      testing:
+        patterns: ["Microsoft.NET.Test.Sdk", "xunit*"]

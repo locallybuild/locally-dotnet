@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Locally.Examples.Aspire.CosmosDB.Api/Locally.Examples.Aspire.CosmosDB.Api.csproj" />
+  <Project Path="Locally.Examples.Aspire.CosmosDB.AppHost/Locally.Examples.Aspire.CosmosDB.AppHost.csproj" />
+  <Project Path="Locally.Examples.Aspire.CosmosDB.Tests/Locally.Examples.Aspire.CosmosDB.Tests.csproj" />
+</Solution>
