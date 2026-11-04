@@ -7,7 +7,7 @@ on:
 
 jobs:
   example:
-    name: ${{ matrix.example }}
+    name: ${{ matrix.example }}${{ matrix.runtime && format(' ({0})', matrix.runtime) || '' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,9 +20,16 @@ jobs:
             plugins: Microsoft.AppConfiguration
           - example: ApplicationInsights
             plugins: Microsoft.Insights,Microsoft.OperationalInsights
+          # Examples whose databases Locally runs in containers are run under both Podman and Docker, since how a
+          # container reaches Locally on the host differs between them on Linux.
           - example: AzureSQL
             plugins: Microsoft.Sql
             accept-sql-server-licence: true
+            runtime: podman
+          - example: AzureSQL
+            plugins: Microsoft.Sql
+            accept-sql-server-licence: true
+            runtime: docker
           - example: CosmosDB
             plugins: Microsoft.DocumentDB
           - example: EventHubs
@@ -31,8 +38,16 @@ jobs:
             plugins: Microsoft.KeyVault
           - example: PostgreSQL
             plugins: Microsoft.DBforPostgreSQL
+            runtime: podman
+          - example: PostgreSQL
+            plugins: Microsoft.DBforPostgreSQL
+            runtime: docker
           - example: Redis
             plugins: Microsoft.Cache
+            runtime: podman
+          - example: Redis
+            plugins: Microsoft.Cache
+            runtime: docker
           - example: ServiceBus
             plugins: Microsoft.ServiceBus
           - example: Storage
@@ -44,7 +59,14 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - uses: locallybuild/setup-locally@a73699889c07b01743dff4cbf290d53a91234448 # v1.0.2
+      # Read by `locally ci` when it starts, so this has to come before setup-locally.
+      - name: Choose the container runtime
+        if: matrix.runtime
+        env:
+          RUNTIME: ${{ matrix.runtime }}
+        run: echo "LOCALLY_CONTAINER_RUNTIME=$RUNTIME" >> "$GITHUB_ENV"
+
+      - uses: locallybuild/setup-locally@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
         with:
           team-uuid: ${{ vars.LOCALLY_TEAM_UUID }}
           plugins: custom
@@ -52,9 +74,43 @@ jobs:
           # The Azure SQL plugin runs SQL Server, whose licence has to be accepted before it can be installed.
           accept-sql-server-licence: ${{ matrix.accept-sql-server-licence && 'true' || 'false' }}
 
+      # Nothing here should reach real Azure: point Microsoft's sign-in and management endpoints at nothing, so
+      # anything which tries fails loudly rather than quietly succeeding over the runner's internet connection.
+      - name: Block Microsoft's sign-in and management endpoints
+        run: echo "0.0.0.0 login.microsoftonline.com login.windows.net management.azure.com" | sudo tee -a /etc/hosts
+
+      # The examples' own timeout is 15m, which a failed deployment waits out (Aspire doesn't surface it), whereas a
+      # passing run takes a couple of minutes including image pulls - so give up far sooner.
       - name: Test
+        timeout-minutes: 8
         working-directory: examples/${{ matrix.example }}
         run: locally run dotnet test Locally.Examples.Aspire.${{ matrix.example }}.slnx
 
-      - uses: locallybuild/setup-locally/teardown@a73699889c07b01743dff4cbf290d53a91234448 # v1.0.2
+      # Teardown uploads Locally's ci.log, which only covers startup - so whilst Locally's still running,
+      # capture the requests it served (tokens and values are redacted) and the state of any containers.
+      - name: Capture diagnostics
+        if: failure()
+        env:
+          DIAGNOSTICS: ${{ runner.temp }}/diagnostics
+        run: |
+          mkdir -p "$DIAGNOSTICS"
+          locally logs --json > "$DIAGNOSTICS/requests.json" 2>&1 || echo "::warning::locally logs failed"
+          # Not `inspect`, since a container's environment can include secrets (e.g. the SQL Server password).
+          for runtime in podman docker; do
+            command -v "$runtime" > /dev/null || continue
+            "$runtime" ps -a > "$DIAGNOSTICS/$runtime-containers.txt" 2>&1 || true
+            for id in $("$runtime" ps -aq 2>/dev/null); do
+              "$runtime" logs --timestamps "$id" > "$DIAGNOSTICS/$runtime-container-$id.log" 2>&1 || true
+            done
+          done
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: diagnostics-${{ matrix.example }}${{ matrix.runtime && format('-{0}', matrix.runtime) || '' }}
+          path: ${{ runner.temp }}/diagnostics
+          if-no-files-found: ignore
+
+      - uses: locallybuild/setup-locally/teardown@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
         if: always()
