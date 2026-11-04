@@ -63,7 +63,7 @@ builder.UseLocallyCredential();
 
 ## Supported integrations
 
-These have been tested against Locally by provisioning each integration under `locally run` (with a project doing a real write and read through its Aspire client integration), then publishing it using `aspire publish` and deploying it using `locally deploy`. Using Aspire 13.6.4, the `locally run` half of this is covered by [the examples](https://github.com/locallybuild/locally-dotnet/tree/main/examples), which run in GitHub Actions - whilst the `aspire publish` and `locally deploy` half was last tested using Aspire 13.6.1.
+These have been tested against Locally by provisioning each integration under `locally run` (with a project doing a real write and read through its Aspire client integration), then publishing it using `aspire publish` and deploying it using `locally deploy`. This was last tested using Aspire 13.6.4 - and the `locally run` half of this is covered by [the examples](https://github.com/locallybuild/locally-dotnet/tree/main/examples), which run in GitHub Actions.
 
 The following work in both:
 
