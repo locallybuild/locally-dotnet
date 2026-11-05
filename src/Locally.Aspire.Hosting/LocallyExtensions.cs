@@ -1,5 +1,8 @@
+#pragma warning disable ASPIREPIPELINES003 // ContainerBuildOptionsCallbackAnnotation and ContainerTargetPlatform are experimental.
+
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
+using Aspire.Hosting.Publishing;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Identity;
@@ -7,6 +10,7 @@ using Locally.Aspire.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Runtime.InteropServices;
 
 namespace Aspire.Hosting;
 
@@ -24,15 +28,16 @@ public static class LocallyExtensions
     public static bool IsLocallyRun(this IDistributedApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.ExecutionContext.IsRunMode && string.Equals(builder.Configuration["LOCALLY_ENVIRONMENT"], "true", StringComparison.OrdinalIgnoreCase);
+        return builder.ExecutionContext.IsRunMode && IsLocallyEnvironment(builder.Configuration);
     }
 
     /// <summary>
     /// Under <c>locally run</c>, provisions the AppHost's Azure resources in
     /// Locally rather than Azure: Aspire creates them there, grants you access to
     /// them, and hands the projects their connection strings, exactly as it would
-    /// in an Azure subscription. Otherwise it does nothing, so the AppHost
-    /// publishes, and runs against Azure, as before.
+    /// in an Azure subscription. This applies to both <c>aspire run</c> and
+    /// <c>aspire deploy</c>. Otherwise it does nothing, so the AppHost publishes,
+    /// runs and deploys against Azure, as before.
     /// </summary>
     /// <remarks>
     /// A resource set to <c>RunAsEmulator()</c> or <c>RunAsContainer()</c> still
@@ -56,7 +61,10 @@ public static class LocallyExtensions
             });
         }
 
-        if (!builder.IsLocallyRun())
+        // Under `locally run`, point Aspire at Locally whether it's running the
+        // AppHost (`aspire run`) or deploying it (`aspire deploy`): both
+        // provision through the same Azure SDK clients and credential.
+        if (!IsLocallyEnvironment(builder.Configuration))
         {
             return builder;
         }
@@ -129,6 +137,16 @@ public static class LocallyExtensions
             return Task.CompletedTask;
         });
 
+        // App Service builds each project's image for linux/amd64, which is what
+        // Azure runs - but Locally runs it on this machine, where an image for
+        // another architecture runs under emulation (and .NET hangs under QEMU).
+        // So under `locally run` images are built for this machine instead.
+        builder.Eventing.Subscribe<BeforeStartEvent>((@event, _) =>
+        {
+            BuildImagesForThisMachine(@event.Model);
+            return Task.CompletedTask;
+        });
+
         // Provision into the subscription, tenant and region `locally run`
         // selected, whatever Aspire remembers choosing on an earlier run: a
         // source added last outranks the user secrets it remembers them in.
@@ -147,6 +165,21 @@ public static class LocallyExtensions
 
         return builder;
     }
+
+    internal static void BuildImagesForThisMachine(DistributedApplicationModel model)
+    {
+        var platform = HostPlatform(RuntimeInformation.OSArchitecture);
+        foreach (var resource in model.Resources.Where(r => r is ProjectResource or ContainerResource))
+        {
+            resource.Annotations.Add(new ContainerBuildOptionsCallbackAnnotation(context => context.TargetPlatform = platform));
+        }
+    }
+
+    internal static ContainerTargetPlatform HostPlatform(Architecture architecture) =>
+        architecture == Architecture.Arm64 ? ContainerTargetPlatform.LinuxArm64 : ContainerTargetPlatform.LinuxAmd64;
+
+    private static bool IsLocallyEnvironment(IConfiguration config) =>
+        string.Equals(config["LOCALLY_ENVIRONMENT"], "true", StringComparison.OrdinalIgnoreCase);
 
     // `locally run` sets all of these; one missing means the AppHost wasn't
     // started by it, whatever LOCALLY_ENVIRONMENT says.

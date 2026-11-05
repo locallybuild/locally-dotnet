@@ -1,6 +1,6 @@
 # Locally.Aspire.Hosting
 
-Runs an [Aspire](https://aspire.dev) AppHost's Azure resources in [Locally](https://locally.build) - when run under `locally run`, `aspire run` provisions these into Locally rather than into Azure. Aspire creates them, grants you access to them and hands your projects their connection strings, just as it would in an Azure Subscription.
+Runs an [Aspire](https://aspire.dev) AppHost's Azure resources in [Locally](https://locally.build) - when run under `locally run`, `aspire run` and `aspire deploy` provision these into Locally rather than into Azure. Aspire creates them, grants you access to them and hands your projects their connection strings, just as it would in an Azure Subscription.
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
@@ -13,6 +13,14 @@ var storage = builder.AddAzureStorage("storage");
 ```bash
 locally run aspire run
 ```
+
+The same goes for deploying the whole AppHost, including its projects, which is useful to try out a deployment to App Service before deploying it to Azure:
+
+```bash
+locally run aspire deploy
+```
+
+When deploying under `locally run`, the projects' container images are built for your machine's architecture rather than for `linux/amd64`, since Locally runs them on your machine (where .NET hangs under emulation). The deployment summary which Aspire prints still shows `*.azurewebsites.net` addresses and Azure Portal links, since Aspire builds these itself rather than reading them from the deployment.
 
 Outside of `locally run`, the only thing `AddLocally()` changes is the [host names and ports](#host-names-and-ports) which Aspire writes into its Bicep - and since on Azure these come out exactly as Aspire would have written them, the same AppHost publishes and runs against Azure as it did before.
 
@@ -63,7 +71,7 @@ builder.UseLocallyCredential();
 
 ## Supported integrations
 
-These have been tested against Locally by provisioning each integration under `locally run` (with a project doing a real write and read through its Aspire client integration), then publishing it using `aspire publish` and deploying it using `locally deploy`. Using Aspire 13.6.4, the `locally run` half of this is covered by [the examples](https://github.com/locallybuild/locally-dotnet/tree/main/examples), which run in GitHub Actions - whilst the `aspire publish` and `locally deploy` half was last tested using Aspire 13.6.1.
+These have been tested against Locally by provisioning each integration under `locally run` (with a project doing a real write and read through its Aspire client integration), then publishing it using `aspire publish` and deploying it using `locally deploy`. This was last tested using Aspire 13.6.4 - and the `locally run` half of this is covered by [the examples](https://github.com/locallybuild/locally-dotnet/tree/main/examples), which run in GitHub Actions.
 
 The following work in both:
 

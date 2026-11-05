@@ -14,11 +14,11 @@ o888ooooood8 `Y8bod8P' `Y8bod8P' `Y888""8o o888o o888o     .8'
 
 This repository contains the .NET packages for using [Aspire](https://aspire.dev) with [Locally Build](https://locally.build), which runs Azure on your machine.
 
-With them, `aspire run` provisions your AppHost's Azure Resources in Locally instead of Azure, and your services sign in to them as the identity `locally run` provides - and since these don't change anything outside of Locally, the same code still publishes and runs against Azure.
+With them, `aspire run` and `aspire deploy` provision your AppHost's Azure Resources in Locally instead of Azure, and your services sign in to them as the identity `locally run` provides - and since these don't change anything outside of Locally, the same code still publishes and runs against Azure.
 
 | Package | Use it in | What it does |
 | --- | --- | --- |
-| [`Locally.Aspire.Hosting`](./src/Locally.Aspire.Hosting) | your Aspire AppHost | `builder.AddLocally()`. Under `locally run`, `aspire run` provisions the AppHost's Azure Resources in Locally instead of Azure. |
+| [`Locally.Aspire.Hosting`](./src/Locally.Aspire.Hosting) | your Aspire AppHost | `builder.AddLocally()`. Under `locally run`, `aspire run` and `aspire deploy` provision the AppHost's Azure Resources in Locally instead of Azure. |
 | [`Locally.Aspire.Client`](./src/Locally.Aspire.Client) | your services | `builder.UseLocallyCredential()`. Signs the service's Azure clients in to Locally, both under `locally run` and once it's deployed into Locally. |
 
 ## Requirements
