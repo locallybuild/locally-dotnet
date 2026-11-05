@@ -1,6 +1,14 @@
+#pragma warning disable ASPIREPIPELINES003 // ContainerBuildOptionsCallbackContext and ContainerTargetPlatform are experimental.
+
+using System.Runtime.InteropServices;
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Azure;
+using Aspire.Hosting.Publishing;
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Locally.Aspire.Hosting.Tests;
 
@@ -49,6 +57,46 @@ public class LocallyHostingTests
         Assert.Contains("locally run", error.Message);
     }
 
+    // `locally run aspire deploy` publishes and then provisions, so Aspire is
+    // pointed at Locally then too - not only under `aspire run`.
+    [Fact]
+    public void UnderLocallyRunAspireDeployPointsAspireAtLocally()
+    {
+        var builder = DistributedApplication.CreateBuilder(["--operation", "publish", .. LocallyRunsEnvironment]);
+
+        builder.AddLocally();
+
+        Assert.True(builder.ExecutionContext.IsPublishMode);
+        Assert.False(builder.IsLocallyRun());
+        Assert.Equal(Subscription, builder.Configuration["Azure:SubscriptionId"]);
+        Assert.Contains(builder.Services, d => d.ServiceType == typeof(ITokenCredentialProvider));
+    }
+
+    [Fact]
+    public async Task BuildsContainerImagesForThisMachine()
+    {
+        var builder = DistributedApplication.CreateBuilder();
+        var container = builder.AddContainer("web", "nginx").Resource;
+        var parameter = builder.AddParameter("secret", secret: true).Resource;
+
+        LocallyExtensions.BuildImagesForThisMachine(new DistributedApplicationModel(builder.Resources));
+
+        Assert.Empty(parameter.Annotations.OfType<ContainerBuildOptionsCallbackAnnotation>());
+        var annotation = Assert.Single(container.Annotations.OfType<ContainerBuildOptionsCallbackAnnotation>());
+        using var services = new ServiceCollection().BuildServiceProvider();
+        var context = new ContainerBuildOptionsCallbackContext(container, services, NullLogger.Instance, CancellationToken.None, builder.ExecutionContext);
+        await annotation.Callback(context);
+        Assert.Equal(LocallyExtensions.HostPlatform(RuntimeInformation.OSArchitecture), context.TargetPlatform);
+    }
+
+    [Theory]
+    [InlineData(Architecture.Arm64, ContainerTargetPlatform.LinuxArm64)]
+    [InlineData(Architecture.X64, ContainerTargetPlatform.LinuxAmd64)]
+    public void HostPlatformMatchesThisMachinesArchitecture(Architecture architecture, ContainerTargetPlatform expected)
+    {
+        Assert.Equal(expected, LocallyExtensions.HostPlatform(architecture));
+    }
+
     [Theory]
     [InlineData("https://management.azure.com/.default", "https://127.0.0.1:5680/.default")]
     [InlineData("https://management.azure.com//.default", "https://127.0.0.1:5680/.default")]
@@ -86,4 +134,18 @@ public class LocallyHostingTests
     {
         Assert.Equal(url, DashboardLinks.Rewrite(url, new Uri("https://localhost:5678")));
     }
+
+    private static readonly string[] LocallyRunsEnvironment =
+    [
+        "LOCALLY_ENVIRONMENT=true",
+        $"AZURE_SUBSCRIPTION_ID={Subscription}",
+        "AZURE_TENANT_ID=00000000-0000-0000-0000-000000000001",
+        "AZURE_CLIENT_ID=00000000-0000-0000-0000-000000000002",
+        "AZURE_CLIENT_SECRET=secret",
+        "AZURE_LOCATION=westeurope",
+        "AZURE_AUTHORITY_HOST=https://127.0.0.1:5679",
+        "AZURE_RESOURCE_MANAGER_ENDPOINT=https://127.0.0.1:5680",
+        "AZURE_RESOURCE_MANAGER_AUDIENCE=https://127.0.0.1:5680",
+        "AZURE_MICROSOFT_GRAPH_AUDIENCE=https://127.0.0.1:5679",
+    ];
 }
