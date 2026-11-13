@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <PackageId>Locally.Aspire.Hosting</PackageId>
-    <Description>Runs an Aspire AppHost's Azure resources in Locally: under `locally run`, `aspire run` provisions them in Locally instead of Azure.</Description>
+    <Description>Runs an Aspire AppHost's Azure resources in Locally: under `locally run`, `aspire run` and `aspire deploy` provision them in Locally instead of Azure.</Description>
     <PackageTags>aspire;azure;locally;hosting</PackageTags>
   </PropertyGroup>
 
@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Azure" Version="13.6.4" />
-    <PackageReference Include="Aspire.Hosting.Azure.AppService" Version="13.6.4" />
-    <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="13.6.4" />
-    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.6.4" />
+    <PackageReference Include="Aspire.Hosting.Azure" Version="13.6.5" />
+    <PackageReference Include="Aspire.Hosting.Azure.AppService" Version="13.6.5" />
+    <PackageReference Include="Aspire.Hosting.Azure.Redis" Version="13.6.5" />
+    <PackageReference Include="Aspire.Hosting.Azure.Storage" Version="13.6.5" />
   </ItemGroup>
 
 </Project>

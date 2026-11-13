@@ -25,7 +25,7 @@ With them, `aspire run` and `aspire deploy` provision your AppHost's Azure Resou
 
 * [Locally Build](https://locally.build).
 * The [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or newer.
-* The [Aspire CLI](https://aspire.dev) (these packages are built against Aspire 13.6.4).
+* The [Aspire CLI](https://aspire.dev) (these packages are built against Aspire 13.6.5).
 * Either [Docker](https://www.docker.com) or [Podman](https://podman.io) (recommended).
 * The Locally Plugin for each Azure service your AppHost uses, e.g. `Microsoft.Storage` (`locally plugin install --name Microsoft.Storage`).
 

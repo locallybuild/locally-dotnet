@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Azure.Messaging.ServiceBus" Version="13.6.4" />
+    <PackageReference Include="Aspire.Azure.Messaging.ServiceBus" Version="13.6.5" />
   </ItemGroup>
 
   <ItemGroup>
