@@ -1,6 +1,6 @@
 # Locally.Aspire.Client
 
-This package allows connecting the Azure SDK clients of [a (.Net) Aspire application](https://aspire.dev) application to [Locally Build](https://locally.build).
+This package allows connecting the Azure SDK clients of [a (.Net) Aspire application](https://aspire.dev) to [Locally Build](https://locally.build).
 
 This can be done by adding the `builder.UseLocallyCredential()` method:
 
