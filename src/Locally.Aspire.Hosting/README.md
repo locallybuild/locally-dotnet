@@ -79,13 +79,13 @@ The following work in both:
 * Azure Managed Redis (`AddAzureManagedRedis`) and Azure Cache for Redis (`AddAzureRedis`)
 * Service Bus (queues, topics and subscriptions)
 * Key Vault (secrets)
+* Event Hubs
 * Application Insights and Log Analytics
 
 The following work, with a caveat:
 
 * PostgreSQL Flexible Server, Cosmos DB and App Configuration: these provision and deploy, however their Aspire client integrations build a credential of their own which `UseLocallyCredential()` can't reach - as such under `locally run` you'll need to give each one `settings.Credential = new LocallyCredential()` ([see `Locally.Aspire.Client`](https://github.com/locallybuild/locally-dotnet/tree/main/src/Locally.Aspire.Client#clients-it-cant-reach)), otherwise App Configuration with `Optional = true` fails silently with empty configuration.
-* Azure SQL: since `Microsoft.Data.SqlClient` builds a credential of its own from `Authentication="Active Directory Default"` (which `UseLocallyCredential()` can't reach, and which contacts login.microsoftonline.com) you'll need to give the connection a token from `LocallyCredential` ([see `Locally.Aspire.Client`](https://github.com/locallybuild/locally-dotnet/tree/main/src/Locally.Aspire.Client#clients-it-cant-reach)). At this time this has only been tested under `locally run`, rather than with `aspire publish` and `locally deploy`.
-* Event Hubs: sending, receiving and reading the hub's properties work under `locally run`, and the Bicep from `aspire publish` deploys using `locally deploy` - however an app deployed into Locally hasn't been tested against it yet.
+* Azure SQL: since `Microsoft.Data.SqlClient` builds a credential of its own from `Authentication="Active Directory Default"` (which `UseLocallyCredential()` can't reach, and which contacts login.microsoftonline.com) you'll need to give the connection a token from `LocallyCredential` ([see `Locally.Aspire.Client`](https://github.com/locallybuild/locally-dotnet/tree/main/src/Locally.Aspire.Client#clients-it-cant-reach)).
 * AI Search: the service provisions and deploys, but since Locally doesn't have a Search data plane yet, clients can't use it.
 * Container Registry and Virtual Network: these deploy from `aspire publish`, however since Aspire (as of 13.6.4) leaves them out of `aspire run` they're never provisioned under `locally run` (in either Azure or Locally).
 * App Service and Container Apps environments: App Service environments deploy, however Container Apps environments don't yet, since Locally doesn't support the dashboard component which Aspire adds to them.
