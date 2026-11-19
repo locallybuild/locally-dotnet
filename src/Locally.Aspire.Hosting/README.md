@@ -54,7 +54,7 @@ All of these only apply when running under `locally run`:
 
 The Bicep which Aspire publishes contains a few values which assume Azure's fixed host names and ports - since these differ in Locally, `AddLocally()` updates each of these to read the real value from the resource instead (both when publishing and under `locally run`). On Azure the result is exactly what Aspire would have written:
 
-* App Service service discovery: a project's references to other App Service apps (e.g. `services__api__https__0` and `API_HTTPS`) are built as `https://<name>.azurewebsites.net` - instead these use the referenced site's `defaultHostName`.
+* App Service service discovery: a project's references to other App Service apps (e.g. `services__api__https__0` and `API_HTTPS`) are built as `https://<name>.azurewebsites.net` - instead these use the referenced site's `defaultHostName`. Since this means the referenced site has to exist first, each site is provisioned after the sites it references (unless two sites reference each other).
 * The Aspire dashboard on App Service: its URL (which the apps send telemetry to) uses the dashboard site's `defaultHostName`.
 * Azure Managed Redis: Aspire writes port 10000 into the connection string - instead this uses the database's deployed `port`.
 * Azure Cache for Redis: Aspire's connection string doesn't specify a port (relying on 6380) - instead this uses the cache's `sslPort`.

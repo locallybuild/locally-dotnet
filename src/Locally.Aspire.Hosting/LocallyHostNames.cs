@@ -1,6 +1,9 @@
+#pragma warning disable ASPIREPIPELINES001 // PipelineConfigurationAnnotation and WellKnownPipelineTags are experimental.
+
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
+using Aspire.Hosting.Pipelines;
 using Azure.Provisioning;
 using Azure.Provisioning.AppService;
 using Azure.Provisioning.Expressions;
@@ -58,7 +61,50 @@ internal static class LocallyHostNames
             resource.Annotations.Add(new AzureAppServiceWebsiteCustomizationAnnotation(
                 (infra, site) => ResolveReferencesByHostName(infra, site, others)));
         }
+
+        // Each site now looks up the sites it references as existing resources,
+        // so they have to be deployed first. Aspire's own Bicep only names them,
+        // so its pipeline doesn't order the sites, and without this a site can
+        // be provisioned before the one it references exists.
+        foreach (var resource in compute)
+        {
+            var referenced = ReferencedComputeResources(resource, compute).ToList();
+            if (referenced.Count == 0)
+            {
+                continue;
+            }
+            resource.Annotations.Add(new PipelineConfigurationAnnotation(context =>
+            {
+                var site = WebsiteOf(resource);
+                if (site is null)
+                {
+                    return;
+                }
+                var provisionSite = context.GetSteps(site, WellKnownPipelineTags.ProvisionInfrastructure);
+                foreach (var other in referenced.Select(WebsiteOf).OfType<IResource>())
+                {
+                    provisionSite.DependsOn(context.GetSteps(other, WellKnownPipelineTags.ProvisionInfrastructure));
+                }
+            }));
+        }
     }
+
+    // The other compute resources a resource references (WithReference), except
+    // ones that reference it back: two sites that look each other up can't both
+    // be deployed first, and ordering them would make the pipeline a cycle.
+    internal static IEnumerable<IResource> ReferencedComputeResources(IResource resource, IReadOnlyCollection<IResource> compute) =>
+        References(resource)
+            .Where(r => r != resource && compute.Contains(r) && !References(r).Contains(resource))
+            .Distinct();
+
+    private static IEnumerable<IResource> References(IResource resource) =>
+        resource.Annotations.OfType<ResourceRelationshipAnnotation>()
+            .Where(a => a.Type == "Reference")
+            .Select(a => a.Resource);
+
+    // The App Service website Aspire publishes a compute resource as.
+    private static IResource? WebsiteOf(IResource resource) =>
+        resource.GetDeploymentTargetAnnotation()?.DeploymentTarget;
 
     // Azure Managed Redis always serves its database on port 10000, so Aspire
     // writes that port into the connection string. Locally serves each database
