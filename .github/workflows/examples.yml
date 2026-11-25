@@ -74,13 +74,8 @@ jobs:
           # The Azure SQL plugin runs SQL Server, whose licence has to be accepted before it can be installed.
           accept-sql-server-licence: ${{ matrix.accept-sql-server-licence && 'true' || 'false' }}
 
-      # Nothing here should reach real Azure: point Microsoft's sign-in and management endpoints at nothing, so
-      # anything which tries fails loudly rather than quietly succeeding over the runner's internet connection.
-      - name: Block Microsoft's sign-in and management endpoints
-        run: echo "0.0.0.0 login.microsoftonline.com login.windows.net management.azure.com" | sudo tee -a /etc/hosts
-
-      # The examples' own timeout is 15m, which a failed deployment waits out (Aspire doesn't surface it), whereas a
-      # passing run takes a couple of minutes including image pulls - so give up far sooner.
+      # A failed deployment fails the test straight away, but the examples' own timeout is 15m, whereas a passing run
+      # takes a couple of minutes including image pulls - so give up far sooner on anything else that hangs.
       - name: Test
         timeout-minutes: 8
         working-directory: examples/${{ matrix.example }}

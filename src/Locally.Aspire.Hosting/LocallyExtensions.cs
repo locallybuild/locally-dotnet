@@ -127,13 +127,15 @@ public static class LocallyExtensions
             }
         });
 
-        // The links are rewritten as Aspire provisions each resource. A hosted
-        // service would only start once every resource had been provisioned,
-        // so the watch starts from BeforeStartEvent, which fires before any are.
+        // The links are rewritten, and a failed resource marked as failed, as
+        // Aspire provisions each resource. A hosted service would only start
+        // once every resource had been provisioned, so the watches start from
+        // BeforeStartEvent, which fires before any are.
         var dashboard = new Uri(config["LOCALLY_DASHBOARD_URL"] ?? "https://localhost:5678");
         builder.Eventing.Subscribe<BeforeStartEvent>((@event, _) =>
         {
             DashboardLinks.Start(@event.Services, dashboard);
+            FailedProvisioning.Start(@event.Services);
             return Task.CompletedTask;
         });
 
