@@ -66,7 +66,7 @@ jobs:
           RUNTIME: ${{ matrix.runtime }}
         run: echo "LOCALLY_CONTAINER_RUNTIME=$RUNTIME" >> "$GITHUB_ENV"
 
-      - uses: locallybuild/setup-locally@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
+      - uses: locallybuild/setup-locally@dc4fb46b46af5deded2a7e8ce1b6da7c337240f0 # v1.2.0
         with:
           team-uuid: ${{ vars.LOCALLY_TEAM_UUID }}
           plugins: custom
@@ -112,5 +112,5 @@ jobs:
           path: ${{ runner.temp }}/diagnostics
           if-no-files-found: ignore
 
-      - uses: locallybuild/setup-locally/teardown@26371b34e6114b72dc469e585f622e9a50b1a39a # v1.0.3
+      - uses: locallybuild/setup-locally/teardown@dc4fb46b46af5deded2a7e8ce1b6da7c337240f0 # v1.2.0
         if: always()
